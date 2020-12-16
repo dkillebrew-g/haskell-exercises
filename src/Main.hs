@@ -13,13 +13,18 @@ where
 -- https://www.stackage.org/lts-16.25/hoogle?q=State
 -- https://www.stackage.org/haddock/lts-16.25/mtl-2.2.2/Control-Monad-State-Strict.html#g:2
 
-import Control.Monad.State.Strict (MonadState (get, put), State, execState)
+import Control.Monad.State.Strict (MonadState (get, put), State, execState,state)
 import Prelude
 import Test.QuickCheck (quickCheck)
 
 
 main :: IO ()
-main = quickCheck prop_PlainOldSameAsStateful
+main = do
+  let accumulate :: Int -> State Int Parity
+      accumulate x = state (\a -> (Even, a + x))
+  print $ execState (accumulate 2) 3
+  print $ execState (traverse accumulate [1..10]) 100
+  -- quickCheck prop_PlainOldSameAsStateful
 
 data Parity = Even | Odd
   deriving (Show)
