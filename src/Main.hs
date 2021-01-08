@@ -54,7 +54,10 @@ prop_PlainOldSameAsStateful = undefined
 -- 7. write your own State type (let's call it MyState or something besides
 --    State to avoid name clashes). Implement Functor, Applicative, Monad. Use
 --    it instead of the imported State in the exercises above (i.e. above
---    replace usage of State with MyState)
+--    replace usage of State with MyState). In English: the State type
+--    represents a function that uses current state to produce a new value and
+--    the next state.
+--
 -- Hint for your own MyState, see:
 -- runState ::
 -- State s a	-- state-passing computation to execute
