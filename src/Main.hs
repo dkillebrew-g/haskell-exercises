@@ -20,10 +20,10 @@ import Test.QuickCheck (quickCheck)
 
 main :: IO ()
 main = do
-  let accumulate :: Int -> State Int Parity
-      accumulate x = state (\a -> (Even, a + x))
+  let accumulate :: Int -> State Int ()
+      accumulate x = state (\a -> ((), a + x))
   print $ execState (accumulate 2) 3
-  print $ execState (traverse accumulate [1..10]) 100
+  print $ execState (traverse accumulate [1 .. 10]) 100
   -- quickCheck prop_PlainOldSameAsStateful
 
 data Parity = Even | Odd
