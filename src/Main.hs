@@ -1,4 +1,5 @@
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE InstanceSigs #-}
 {-# LANGUAGE ScopedTypeVariables #-}
@@ -13,10 +14,12 @@ where
 -- https://www.stackage.org/lts-16.25/hoogle?q=State
 -- https://www.stackage.org/haddock/lts-16.25/mtl-2.2.2/Control-Monad-State-Strict.html#g:2
 
-import Control.Monad.State.Strict (MonadState (get, put), State, execState,state)
-import Prelude
+import Control.Monad.State.Strict (MonadState (get, put), State, execState, state)
+import Test.QuickCheck
 import Test.QuickCheck (quickCheck)
-
+import Test.QuickCheck.Checkers
+import Test.QuickCheck.Classes
+import Prelude
 
 main :: IO ()
 main = do
@@ -25,6 +28,9 @@ main = do
   print $ execState (accumulate 2) 3
   print $ execState (traverse accumulate [1 .. 10]) 100
   -- quickCheck prop_PlainOldSameAsStateful
+  let myStateful :: (StatefulComputation ()) (Int, Float, String)
+      myStateful = undefined
+  quickBatch $ functor myStateful
 
 data Parity = Even | Odd
   deriving (Show)
@@ -64,3 +70,25 @@ prop_PlainOldSameAsStateful = undefined
 -- -> s	-- initial state
 -- -> (a, s)	-- return value and final state
 
+data StatefulComputation state result = StatefulComputation (state -> (result, state))
+
+-- Not of great interest to you; necessary for the property testing
+instance (Arbitrary a) => Arbitrary ((StatefulComputation ()) a) where
+  arbitrary = do
+    rv <- arbitrary
+    pure (StatefulComputation (\s -> (rv, s)))
+
+-- Not of great interest to you; necessary for the property testing
+instance (EqProp a) => EqProp ((StatefulComputation ()) a) where
+  (StatefulComputation fl) =-= (StatefulComputation fr) =
+    fl () =-= fr ()
+
+-- Not of great interest to you; necessary for the property testing
+instance (Show result) => Show (StatefulComputation () result) where
+  show (StatefulComputation f) =
+    let (r, _) = f ()
+     in show r
+
+instance Functor (StatefulComputation state) where
+  fmap :: (a -> b) -> (StatefulComputation state) a -> (StatefulComputation state) b
+  fmap = undefined
