@@ -15,10 +15,9 @@ where
 -- https://www.stackage.org/haddock/lts-16.25/mtl-2.2.2/Control-Monad-State-Strict.html#g:2
 
 import Control.Monad.State.Strict (MonadState (get, put), State, execState, state)
-import Test.QuickCheck
-import Test.QuickCheck (quickCheck)
-import Test.QuickCheck.Checkers
-import Test.QuickCheck.Classes
+import Test.QuickCheck (Arbitrary (arbitrary))
+import Test.QuickCheck.Checkers (EqProp (..), quickBatch)
+import Test.QuickCheck.Classes (applicative, functor, monad)
 import Prelude
 
 main :: IO ()
@@ -31,6 +30,8 @@ main = do
   let myStateful :: (StatefulComputation ()) (Int, Float, String)
       myStateful = undefined
   quickBatch $ functor myStateful
+  quickBatch $ applicative myStateful
+  quickBatch $ monad myStateful
 
 data Parity = Even | Odd
   deriving (Show)
