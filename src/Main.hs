@@ -17,6 +17,20 @@ import Prelude
 
 type IntToString = Map Int String
 
+-- Reader is a function like this: (someData -> a)
+
+newtype MyFunctionContainer someData return = MyFunctionContainer (someData -> return)
+
+-- Functor
+-- fmap :: (a -> b) -> Reader someData a -> Reader someData b
+
+-- Applicative
+-- pure :: a -> Reader someData a
+-- (<*>) :: Reader someData (a -> b) -> Reader someData a -> Reader someData b
+
+-- Monad
+-- (>>=) :: Reader someData a -> (a -> Reader someData b) -> Reader someData b
+
 -- TODO: use {-# LANGUAGE OverloadedLists #-}
 -- to make this more concise
 mapZeroToTwo :: IntToString
