@@ -14,82 +14,98 @@ where
 -- https://www.stackage.org/lts-16.25/hoogle?q=State
 -- https://www.stackage.org/haddock/lts-16.25/mtl-2.2.2/Control-Monad-State-Strict.html#g:2
 
+import Control.Applicative
 import Control.Monad.State.Strict (MonadState (get, put), State, execState, state)
 import Test.QuickCheck (Arbitrary (arbitrary))
 import Test.QuickCheck.Checkers (EqProp (..), quickBatch)
 import Test.QuickCheck.Classes (applicative, functor, monad)
 import Prelude
 
+mul2 :: Integer -> Integer
+mul2 = (* 2)
+
+add10 :: Integer -> Integer
+add10 = (+ 10)
+
+add10ThenMul2 :: Integer -> Integer
+add10ThenMul2 = mul2 . add10
+
+usingFmap :: Integer -> Integer
+usingFmap = fmap mul2 add10
+
+discardString :: String -> String
+discardString x = ""
+
+whatsTheType :: Integer -> Integer
+whatsTheType = (+) <$> mul2 <*> add10
+
+-- (+) <$> mul2 <*> add10
+-- =
+-- \x -> mul2 x + add10 x
+
+newtype MyReader argType resultType = MyReader {runMyReader :: argType -> resultType}
+
+instance Functor (MyReader argType) where
+  fmap ::
+    (resultA -> resultB) ->
+    MyReader argType resultA ->
+    MyReader argType resultB
+  fmap aToB (MyReader argToResultA) =
+    MyReader
+      ( \x ->
+          let foo = argToResultA x
+           in aToB foo
+      )
+
+instance Applicative (MyReader argType) where
+  pure :: result -> MyReader argType result
+  pure someResult = MyReader (const someResult)
+
+  -- pure someResult = MyReader (\_ -> someResult)
+
+  (<*>) :: forall a b. MyReader argType (a -> b) -> MyReader argType a -> MyReader argType b
+  (MyReader argToAToB) <*> fa =
+    MyReader
+      ( \someArgType ->
+          let aToB = argToAToB someArgType
+              MyReader argToB = fmap aToB fa
+           in argToB someArgType
+      )
+
+add :: Int -> Int -> Int
+add = undefined
+
+-- std::bind
+add2 = add 2
+
+myFunc :: String -> Whatever
+
+myFunc2 :: IO Whatever
+
+data SystemBuilder
+
+fooPlain :: SystemBuilder -> Integer -> String
+fooPlain sb integer =
+    let ..
+        barssResult = barPlain sb
+barPlain :: SystemBuilder -> Integer -> String
+
+fooReader :: Integer -> Reader SystemBuilder String
+fooReader = do
+  barReader 10
+barReader :: Integer -> Reader SystemBuilder String
+
 main :: IO ()
 main = do
-  let accumulate :: Int -> State Int ()
-      accumulate x = state (\a -> ((), a + x))
-  print $ execState (accumulate 2) 3
-  print $ execState (traverse accumulate [1 .. 10]) 100
-  -- quickCheck prop_PlainOldSameAsStateful
-  let myStateful :: (StatefulComputation ()) (Int, Float, String)
-      myStateful = undefined
-  quickBatch $ functor myStateful
-  quickBatch $ applicative myStateful
-  quickBatch $ monad myStateful
+  print $ (mul2 . add10) 3
+  print $ (fmap mul2 add10) 3
 
-data Parity = Even | Odd
-  deriving (Show)
+  print $
+    (runMyReader (fmap mul2 (MyReader add10))) 3
 
--- 1. create a plain old function that: Add `x` to `accum`. Return `x`'s Parity
---    and the new `accum`.
---    x, accum :: Int
---
--- 2. call this function for a few different `x` and some initial `accum`,
---    passing the `accum` between calls. Print the final `accum`, print the
---    final Parity.
--- 3. Translate the above to a State-ful function. I.e. the State type/State
---    monad.
--- 4. As you did in 2, but use the State monad functions (i.e. the functions in
---    this section:
---    https://www.stackage.org/haddock/lts-16.25/mtl-2.2.2/Control-Monad-State-Strict.html#g:2).
---    Including: Print the final `accum`, print the final Parity.
+-- (partiallyAppliedFunction (fmap mul2 (MyReader add10))) 3
 
--- 5. use Quickcheck to write a property that:
--- for all x and for all accum, your plain old function and your State-ful function
--- compute the same accum.
-prop_PlainOldSameAsStateful :: Int -> Int -> Bool
-prop_PlainOldSameAsStateful = undefined
+-- print $ ((+) <$> mul2 <*> add10) 3
+-- print $ (liftA2 (+) mul2 add10) 3
 
--- 6. add a whole list of integers to the accumulator, and return the new
---    accumulator. Remember (i.e. use) previous lessons/chapters :)
--- 7. write your own State type (let's call it MyState or something besides
---    State to avoid name clashes). Implement Functor, Applicative, Monad. Use
---    it instead of the imported State in the exercises above (i.e. above
---    replace usage of State with MyState). In English: the State type
---    represents a function that uses current state to produce a new value and
---    the next state.
---
--- Hint for your own MyState, see:
--- runState ::
--- State s a	-- state-passing computation to execute
--- -> s	-- initial state
--- -> (a, s)	-- return value and final state
-
-data StatefulComputation state result = StatefulComputation (state -> (result, state))
-
--- Not of great interest to you; necessary for the property testing
-instance (Arbitrary a) => Arbitrary ((StatefulComputation ()) a) where
-  arbitrary = do
-    rv <- arbitrary
-    pure (StatefulComputation (\s -> (rv, s)))
-
--- Not of great interest to you; necessary for the property testing
-instance (EqProp a) => EqProp ((StatefulComputation ()) a) where
-  (StatefulComputation fl) =-= (StatefulComputation fr) =
-    fl () =-= fr ()
-
--- Not of great interest to you; necessary for the property testing
-instance (Show result) => Show (StatefulComputation () result) where
-  show (StatefulComputation f) =
-    let (r, _) = f ()
-     in show r
-
-instance Functor (StatefulComputation state) where
-  fmap :: (a -> b) -> (StatefulComputation state) a -> (StatefulComputation state) b
-  fmap = undefined
+-- putStrLn "hello  world"
