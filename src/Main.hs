@@ -5,107 +5,53 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# OPTIONS_GHC -Wall #-}
 
-module Main
-  ( main,
-  )
-where
+module Main (main) where
 
 -- Some useful links:
--- https://www.stackage.org/lts-16.25/hoogle?q=State
--- https://www.stackage.org/haddock/lts-16.25/mtl-2.2.2/Control-Monad-State-Strict.html#g:2
+-- https://www.stackage.org/lts-14.27/hoogle
+-- https://www.stackage.org/haddock/lts-14.27/mtl-2.2.2/Control-Monad-Reader.html#g:2
 
-import Control.Applicative
-import Control.Monad.State.Strict (MonadState (get, put), State, execState, state)
-import Test.QuickCheck (Arbitrary (arbitrary))
-import Test.QuickCheck.Checkers (EqProp (..), quickBatch)
-import Test.QuickCheck.Classes (applicative, functor, monad)
+import Control.Monad.Reader
+import Data.Map (Map, fromList)
 import Prelude
 
-mul2 :: Integer -> Integer
-mul2 = (* 2)
+type IntToString = Map Int String
 
-add10 :: Integer -> Integer
-add10 = (+ 10)
+-- TODO: use {-# LANGUAGE OverloadedLists #-}
+-- to make this more concise
+mapZeroToTwo :: IntToString
+mapZeroToTwo = fromList [(0, "zero"), (1, "one"), (2, "two")]
 
-add10ThenMul2 :: Integer -> Integer
-add10ThenMul2 = mul2 . add10
+-- This type captures the possibility for error:
+--    IntToString -> Int -> Maybe String
+-- But we don't care about that right now.
+lookupInt :: IntToString -> Int -> String
+lookupInt = undefined
 
-usingFmap :: Integer -> Integer
-usingFmap = fmap mul2 add10
+-- Adds the new key and value to the IntToString map
+augmentStringMap :: IntToString -> Int -> String -> IntToString
+augmentStringMap = undefined
 
-discardString :: String -> String
-discardString x = ""
+lookupTwoInts :: IntToString -> (Int, Int) -> (String, String)
+lookupTwoInts = undefined
 
-whatsTheType :: Integer -> Integer
-whatsTheType = (+) <$> mul2 <*> add10
+type MapReader = Reader IntToString
 
--- (+) <$> mul2 <*> add10
--- =
--- \x -> mul2 x + add10 x
+-- Does the same as the version above, but this time using the Reader type.
+lookupIntR :: Int -> MapReader String
+lookupIntR = undefined
 
-newtype MyReader argType resultType = MyReader {runMyReader :: argType -> resultType}
+-- Does the same as the version above, but this time using the Reader type.
+lookupTwoIntsR :: (Int, Int) -> MapReader (String, String)
+lookupTwoIntsR = undefined
 
-instance Functor (MyReader argType) where
-  fmap ::
-    (resultA -> resultB) ->
-    MyReader argType resultA ->
-    MyReader argType resultB
-  fmap aToB (MyReader argToResultA) =
-    MyReader
-      ( \x ->
-          let foo = argToResultA x
-           in aToB foo
-      )
-
-instance Applicative (MyReader argType) where
-  pure :: result -> MyReader argType result
-  pure someResult = MyReader (const someResult)
-
-  -- pure someResult = MyReader (\_ -> someResult)
-
-  (<*>) :: forall a b. MyReader argType (a -> b) -> MyReader argType a -> MyReader argType b
-  (MyReader argToAToB) <*> fa =
-    MyReader
-      ( \someArgType ->
-          let aToB = argToAToB someArgType
-              MyReader argToB = fmap aToB fa
-           in argToB someArgType
-      )
-
-add :: Int -> Int -> Int
-add = undefined
-
--- std::bind
-add2 = add 2
-
-myFunc :: String -> Whatever
-
-myFunc2 :: IO Whatever
-
-data SystemBuilder
-
-fooPlain :: SystemBuilder -> Integer -> String
-fooPlain sb integer =
-    let ..
-        barssResult = barPlain sb
-barPlain :: SystemBuilder -> Integer -> String
-
-fooReader :: Integer -> Reader SystemBuilder String
-fooReader = do
-  barReader 10
-barReader :: Integer -> Reader SystemBuilder String
+-- If the Int key is not in the map, add it to the map with value "unknown",
+-- then do the lookup.
+handleUndefinedLookup :: Int -> MapReader String
+handleUndefinedLookup =
+  -- Your implementation should use `Control.Monad.Reader.withReader`
+  undefined
 
 main :: IO ()
 main = do
-  print $ (mul2 . add10) 3
-  print $ (fmap mul2 add10) 3
-
-  print $
-    (runMyReader (fmap mul2 (MyReader add10))) 3
-
--- (partiallyAppliedFunction (fmap mul2 (MyReader add10))) 3
-
--- print $ ((+) <$> mul2 <*> add10) 3
--- print $ (liftA2 (+) mul2 add10) 3
-
--- putStrLn "hello  world"
+  undefined
