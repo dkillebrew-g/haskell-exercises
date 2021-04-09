@@ -2,6 +2,7 @@
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE InstanceSigs #-}
+{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# OPTIONS_GHC -Wall #-}
 
@@ -9,78 +10,74 @@ module Main (main) where
 
 -- Some useful links:
 -- https://www.stackage.org/lts-14.27/hoogle
--- https://www.stackage.org/haddock/lts-14.27/mtl-2.2.2/Control-Monad-Reader.html#g:2
 
-import Control.Monad.Reader
-import Data.Map (Map, fromList)
 import Prelude
 
-type IntToString = Map Int String
+-- Fill in all TODOs and `undefined`s.
 
--- Reader is a function like this: (someData -> a)
+-- Define a data type that represents a parser (in the parser combinator style).
+-- A parser combinator is a function that takes a string and returns one of:
+-- * An error
+-- * The value that was parsed, and the rest of the string (which may be used by
+--   subsequent parsers)
+-- Hint: a parser can produce a value of any type...
+data Parser -- TODO
+-- Note that depending on your definition above, some of the mentions of Parser,
+-- below, must change.
 
-newtype MyReader someData return = MyReader (someData -> return)
+-- | Parses this string using this parser.
+--
+-- The type of `undefined` depends on how you chose to define `Parser`, so you
+-- must fill it in.
+runParser :: Parser -> String -> undefined
+runParser = undefined
 
-instance Functor  (MyReader someData) where
-  fmap :: (a -> b) -> MyReader someData a -> MyReader someData b
-  fmap = undefined
+-- | Creates a parser for a single character
+char :: Char -> Parser
+char = undefined
 
-instance Applicative (MyReader someData) where
-  pure :: a -> MyReader someData a
-  pure somevalue = MyReader (\_ -> somevalue)
-  -- or equivalently:
-  -- pure somevalue = MyReader (const somevalue)
--- (<*>) :: Reader someData (a -> b) -> Reader someData a -> Reader someData b
+-- | This function fatal errors if the parsing failed, and is only implemented
+-- as a convenience method used below. I.e., this is bad error handling.
+-- assumeSuccess :: YourParserResultType a -> a
+-- assumeSuccess = undefined
 
--- Monad
--- (>>=) :: Reader someData a -> (a -> Reader someData b) -> Reader someData b
+-- Test your char parser. For example:
+-- theLetterA = assumeSuccess (runParser (char 'a') "a")
+-- > theLetterA == 'a'
+-- > True
 
--- TODO: use {-# LANGUAGE OverloadedLists #-}
--- to make this more concise
-mapZeroToTwo :: IntToString
-mapZeroToTwo = fromList [(0, "zero"), (1, "one"), (2, "two")]
+-- | Returns a parser that: runs the parsers in order, stopping at the first
+-- successful parse. If all fail, it fails.
+oneOf :: [Parser] -> Parser
+oneOf = undefined
 
--- This type captures the possibility for error:
---    IntToString -> Int -> Maybe String
--- But we don't care about that right now.
-lookupInt :: IntToString -> Int -> String
-lookupInt = undefined
+-- > theLetterC = assumeSuccess (runParser (oneOf [char 'a', char 'b', char 'c']) "c")
+-- > theLetterC == 'c'
+-- > True
 
--- Adds the new key and value to the IntToString map
-augmentStringMap :: IntToString -> Int -> String -> IntToString
-augmentStringMap = undefined
+-- | Given a function and a parser, returns a parser that: Runs the parser, and
+-- if it was successful, apply the function to the parsed value.
+-- modifyResult :: (a -> b) -> Parser ? -> Parser ?
+-- modifyResult = undefined
 
-lookupTwoInts :: IntToString -> (Int, Int) -> (String, String)
-lookupTwoInts = undefined
+-- | Given a value, returns a parser that always succeeds and always returns the
+-- given value.
+-- makeParserThatAlwaysReturns :: a -> Parser ?
+-- makeParserThatAlwaysReturns = undefined
 
-type MapReader = Reader IntToString
+-- | Given two values, returns a parser that runs the first then the second
+-- parser (and the returned parser fails ASAP if either given parser fail).
+-- Additionally, the first parser returns a function, while the second parser
+-- returns a value that can be passed to the function.
+-- sequenceParsers :: Parser ? -> Parser ? -> Parser ?
+-- sequenceParsers = undefined
 
--- Does the same as the version above, but this time using the Reader type.
-lookupIntR :: Int -> MapReader String
-lookupIntR i =
-  asks (\mp -> lookupInt mp i)
-  -- do
-  -- mp <- ask
-  -- pure (lookupInt mp i)
 
--- Does the same as the version above, but this time using the Reader type.
-lookupTwoIntsR :: (Int, Int) -> MapReader (String, String)
-lookupTwoIntsR (i0, i1) = do
-  s0 <- lookupIntR i0
-  s1 <- lookupIntR i1
-  pure (s0, s1)
--- lookupTwoIntsR (i0, i1) =
---   liftM2 (,) (lookupIntR i0) (lookupIntR i1)
 
-lookupTwoIntsList :: [Int] -> MapReader [String]
-lookupTwoIntsList = mapM lookupIntR
 
--- If the Int key is not in the map, add it to the map with value "unknown",
--- then do the lookup.
-handleUndefinedLookup :: Int -> MapReader String
-handleUndefinedLookup =
-  -- Your implementation should use `Control.Monad.Reader.withReader`
-  undefined
+-- Implement Functor for your Parser type
+
+-- Implement Applicative for your Parser type
 
 main :: IO ()
 main = do
