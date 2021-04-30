@@ -65,10 +65,12 @@ oneOf = undefined
 -- makeParserThatAlwaysReturns :: a -> Parser ?
 -- makeParserThatAlwaysReturns = undefined
 
--- | Given two values, returns a parser that runs the first then the second
--- parser (and the returned parser fails ASAP if either given parser fail).
--- Additionally, the first parser returns a function, while the second parser
--- returns a value that can be passed to the function.
+-- | Given two values:
+-- * A parser that creates a function of one argument.
+-- * A parser that creates a value which can be passed to the function
+--
+-- `sequenceParsers` returns a parser that runs the first, then the second,
+--   then applies the value to the function.
 -- sequenceParsers :: Parser ? -> Parser ? -> Parser ?
 -- sequenceParsers = undefined
 
