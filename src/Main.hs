@@ -80,6 +80,43 @@ oneOf = undefined
 
 -- Implement Applicative for your Parser type
 
+-- Let's make some more combinators, which we'll use in the exercise that
+-- follows.
+
+-- | A list with at least 1 element.
+--
+-- Note: this is an example of "Make illegal states unrepresentable". We've used
+-- the type system to make empty lists impossible. The compiler enforces our
+-- desired semantics.
+data NonNull a = NonNull a [a]
+
+-- | Parses at least one, and possibly more, of something.
+some :: Parser a -> Parser (NonNull a)
+some = undefined
+
+-- | Parses zero or more of something.
+many :: Parser a -> Parser [a]
+many = undefined
+
+-- Now let's create a parser for numbers. Let's parse two types of numbers:
+-- non-negative integers (e.g. parse 0 and parse 3, but don't parse -3), and
+-- decimals with fractional digits (e.g. 3.141). We want to differentiate
+-- between the two. Feel free to ask me how to handle any edge cases, or do
+-- whatever you think reasonable.
+
+-- 1) Write a data type that represents these two kinds of numbers (and
+--    differentiates between them, hint: sum type).
+data Number
+
+-- 2) Write a parser for non-negative integers.
+-- 3) Write a parser for decimals with fractional digits.
+-- 4) Write a parser for Number by combining the above. Note that the longest
+--    matching prefix should be used, so "3.14" should be parsed as a decimal
+--    with fractional digits, instead of a non-negative integer.
+
+number :: Parser Number
+number = undefined
+
 main :: IO ()
 main = do
   undefined
