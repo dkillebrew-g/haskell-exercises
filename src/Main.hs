@@ -21,7 +21,7 @@ import Prelude
 -- * The value that was parsed, and the rest of the string (which may be used by
 --   subsequent parsers)
 -- Hint: a parser can produce a value of any type...
-data Parser -- TODO
+data Parser a -- TODO
 -- Note that depending on your definition above, some of the mentions of Parser,
 -- below, must change.
 
@@ -29,11 +29,11 @@ data Parser -- TODO
 --
 -- The type of `undefined` depends on how you chose to define `Parser`, so you
 -- must fill it in.
-runParser :: Parser -> String -> undefined
+runParser :: Parser a -> String -> undefined
 runParser = undefined
 
 -- | Creates a parser for a single character
-char :: Char -> Parser
+char :: Char -> Parser Char
 char = undefined
 
 -- | This function fatal errors if the parsing failed, and is only implemented
@@ -47,8 +47,10 @@ char = undefined
 -- > True
 
 -- | Returns a parser that: runs the parsers in order, stopping at the first
--- successful parse. If all fail, it fails.
-oneOf :: [Parser] -> Parser
+-- successful parse. If all fail, it fails. The subparsers should not interfere
+-- with each other; the original string should be passed to each subparser in
+-- turn.
+oneOf :: [Parser a] -> Parser a
 oneOf = undefined
 
 -- > theLetterC = assumeSuccess (runParser (oneOf [char 'a', char 'b', char 'c']) "c")
@@ -73,9 +75,6 @@ oneOf = undefined
 --   then applies the value to the function.
 -- sequenceParsers :: Parser ? -> Parser ? -> Parser ?
 -- sequenceParsers = undefined
-
-
-
 
 -- Implement Functor for your Parser type
 
