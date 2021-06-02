@@ -94,7 +94,15 @@ data NonNull a = NonNull a [a]
 
 -- | Parses at least one, and possibly more, of something.
 some :: Parser a -> Parser (NonNull a)
-some = undefined
+some pe@(Parser parseElement) =
+  let
+      parseFirst = Parser (\s ->
+        case parseElement s of
+            Nothing -> Nothing
+            Just (x, s') -> Just (NonNull x, s') )
+            -- A more verbose version of the above:
+            -- Just (x, s') -> Just (\xs -> NonNull x xs, s') )
+  in  sequenceParsers parseFirst (many pe)
 
 -- | Parses zero or more of something.
 --
