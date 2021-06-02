@@ -79,8 +79,13 @@ sequenceParsers :: Parser (a -> b) -> Parser a -> Parser b
 sequenceParsers = undefined
 
 -- Implement Functor for your Parser type
+instance Functor Parser where
+  fmap = modifyResult
 
 -- Implement Applicative for your Parser type
+instance Applicative Parser where
+  pure = makeParserThatAlwaysReturns
+  (<*>) = sequenceParsers
 
 -- Let's make some more combinators, which we'll use in the exercise that
 -- follows.
