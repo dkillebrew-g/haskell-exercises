@@ -21,7 +21,9 @@ import Prelude
 -- * The value that was parsed, and the rest of the string (which may be used by
 --   subsequent parsers)
 -- Hint: a parser can produce a value of any type...
-data Parser a -- TODO
+data Parser a = Parser (String -> Maybe (a, String))
+
+-- TODO
 -- Note that depending on your definition above, some of the mentions of Parser,
 -- below, must change.
 
@@ -29,7 +31,7 @@ data Parser a -- TODO
 --
 -- The type of `undefined` depends on how you chose to define `Parser`, so you
 -- must fill it in.
-runParser :: Parser a -> String -> undefined
+runParser :: Parser a -> String -> Maybe (a, String)
 runParser = undefined
 
 -- | Creates a parser for a single character
@@ -59,13 +61,13 @@ oneOf = undefined
 
 -- | Given a function and a parser, returns a parser that: Runs the parser, and
 -- if it was successful, apply the function to the parsed value.
--- modifyResult :: (a -> b) -> Parser ? -> Parser ?
--- modifyResult = undefined
+modifyResult :: (a -> b) -> Parser a -> Parser b
+modifyResult = undefined
 
 -- | Given a value, returns a parser that always succeeds and always returns the
 -- given value.
--- makeParserThatAlwaysReturns :: a -> Parser ?
--- makeParserThatAlwaysReturns = undefined
+makeParserThatAlwaysReturns :: a -> Parser a
+makeParserThatAlwaysReturns = undefined
 
 -- | Given two values:
 -- * A parser that creates a function of one argument.
@@ -73,8 +75,8 @@ oneOf = undefined
 --
 -- `sequenceParsers` returns a parser that runs the first, then the second,
 --   then applies the value to the function.
--- sequenceParsers :: Parser ? -> Parser ? -> Parser ?
--- sequenceParsers = undefined
+sequenceParsers :: Parser (a -> b) -> Parser a -> Parser b
+sequenceParsers = undefined
 
 -- Implement Functor for your Parser type
 
@@ -95,8 +97,16 @@ some :: Parser a -> Parser (NonNull a)
 some = undefined
 
 -- | Parses zero or more of something.
+--
+-- Returns an empty list when it can't parse even one element, and does not
+-- consume any of the input.
 many :: Parser a -> Parser [a]
-many = undefined
+many (Parser parseElement) =
+  let parseList s =
+        case parseElement s of
+          Nothing -> Just ([], s)
+          Just (x, s') -> (\(xs, s'') -> (x : xs, s'')) <$> parseList s'
+   in Parser parseList
 
 -- Now let's create a parser for numbers. Let's parse two types of numbers:
 -- non-negative integers (e.g. parse 0 and parse 3, but don't parse -3), and
@@ -108,8 +118,8 @@ many = undefined
 --    differentiates between them, hint: sum type).
 data Number
 
--- 2) Write a parser for non-negative integers.
--- 3) Write a parser for decimals with fractional digits.
+-- 2) Write a parser for non-negative integers. E.g "3"
+-- 3) Write a parser for decimals with fractional digits. E.g. "3.14"
 -- 4) Write a parser for Number by combining the above. Note that the longest
 --    matching prefix should be used, so "3.14" should be parsed as a decimal
 --    with fractional digits, instead of a non-negative integer.
