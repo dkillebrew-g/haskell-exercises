@@ -11,6 +11,7 @@ module Main (main) where
 -- Some useful links:
 -- https://www.stackage.org/lts-14.27/hoogle
 
+import Data.Char
 import Prelude
 
 -- Fill in all TODOs and `undefined`s.
@@ -96,6 +97,37 @@ instance Applicative Parser where
 -- the type system to make empty lists impossible. The compiler enforces our
 -- desired semantics.
 data NonNull a = NonNull a [a]
+
+digit :: Parser Int
+digit =
+  fmap
+    digitToInt
+    ( oneOf
+        [ char '0',
+          char '1',
+          char '2',
+          char '3',
+          char '4',
+          char '5',
+          char '6',
+          char '7',
+          char '8',
+          char '9'
+        ]
+    )
+-- digit =
+--   oneOf
+--     [ char '0' *> makeParserThatAlwaysReturns 0,
+--       char '1' *> makeParserThatAlwaysReturns 1,
+--       char '2' *> makeParserThatAlwaysReturns 2,
+--       char '3' *> makeParserThatAlwaysReturns 3,
+--       char '4' *> makeParserThatAlwaysReturns 4,
+--       char '5' *> makeParserThatAlwaysReturns 5,
+--       char '6' *> makeParserThatAlwaysReturns 6,
+--       char '7' *> makeParserThatAlwaysReturns 7,
+--       char '8' *> makeParserThatAlwaysReturns 8,
+--       char '9' *> makeParserThatAlwaysReturns 9
+--     ]
 
 -- | Parses at least one, and possibly more, of something.
 some :: Parser a -> Parser (NonNull a)
