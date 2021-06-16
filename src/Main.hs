@@ -208,6 +208,30 @@ floatParts =
 number :: Parser Number
 number = undefined
 
+-- Exercise:
+-- Create mathematical expression parser & evaluator.
+-- three = evaluate (assumeSuccess $ runParser parseMathExpression "1 + 2")
+-- three == 3 -- is True
+
+data MathExpression
+
+mathExpressionParser :: Parser MathExpression
+mathExpressionParser = undefined
+
+evaluate :: MathExpression -> Int
+evaluate = undefined
+
+-- Data.Map
+
+-- TemplateHaskell
+data Environment = Environment Map
+  -- deriving (ToJson, FromJson)
+
+-- Generics
+
+-- three = evaluate (Environment {'x' : 2}) (assumeSuccess $ runParser parseMathExpression "1 + x")
+-- three = evaluate (Environment (fromList [('x', 2)])) (assumeSuccess $ runParser parseMathExpression "1 + x")
+
 main :: IO ()
 main = do
   undefined
