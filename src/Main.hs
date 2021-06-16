@@ -39,6 +39,11 @@ runParser = undefined
 char :: Char -> Parser Char
 char = undefined
 
+-- range:: Char -> Char -> Parser Char
+-- range = undefined
+
+-- lowercaseParser = range 'a' 'z'
+
 -- | This function fatal errors if the parsing failed, and is only implemented
 -- as a convenience method used below. I.e., this is bad error handling.
 -- assumeSuccess :: YourParserResultType a -> a
@@ -85,7 +90,10 @@ instance Functor Parser where
 
 -- Implement Applicative for your Parser type
 instance Applicative Parser where
+  pure :: a -> Parser a
   pure = makeParserThatAlwaysReturns
+
+  (<*>) :: Parser (a -> b) -> Parser a -> Parser b
   (<*>) = sequenceParsers
 
 -- Let's make some more combinators, which we'll use in the exercise that
@@ -100,46 +108,47 @@ data NonNull a = NonNull a [a]
 
 digit :: Parser Int
 digit =
-  fmap
-    digitToInt
-    ( oneOf
-        [ char '0',
-          char '1',
-          char '2',
-          char '3',
-          char '4',
-          char '5',
-          char '6',
-          char '7',
-          char '8',
-          char '9'
-        ]
-    )
--- digit =
---   oneOf
---     [ char '0' *> makeParserThatAlwaysReturns 0,
---       char '1' *> makeParserThatAlwaysReturns 1,
---       char '2' *> makeParserThatAlwaysReturns 2,
---       char '3' *> makeParserThatAlwaysReturns 3,
---       char '4' *> makeParserThatAlwaysReturns 4,
---       char '5' *> makeParserThatAlwaysReturns 5,
---       char '6' *> makeParserThatAlwaysReturns 6,
---       char '7' *> makeParserThatAlwaysReturns 7,
---       char '8' *> makeParserThatAlwaysReturns 8,
---       char '9' *> makeParserThatAlwaysReturns 9
---     ]
+  -- fmap
+  --   digitToInt
+  --   ( oneOf -- :: Parser Char
+  --       [ char '0',
+  --         char '1',
+  --         char '2',
+  --         char '3',
+  --         char '4',
+  --         char '5',
+  --         char '6',
+  --         char '7',
+  --         char '8',
+  --         char '9'
+  --       ]
+  --   )
+  oneOf
+    [ char '0' *> pure 0,
+      char '1' *> pure 1,
+      char '2' *> pure 2,
+      char '3' *> pure 3,
+      char '4' *> pure 4,
+      char '5' *> pure 5,
+      char '6' *> pure 6,
+      char '7' *> pure 7,
+      char '8' *> pure 8,
+      char '9' *> pure 9
+    ]
 
 -- | Parses at least one, and possibly more, of something.
 some :: Parser a -> Parser (NonNull a)
 some pe@(Parser parseElement) =
-  let
-      parseFirst = Parser (\s ->
-        case parseElement s of
-            Nothing -> Nothing
-            Just (x, s') -> Just (NonNull x, s') )
-            -- A more verbose version of the above:
-            -- Just (x, s') -> Just (\xs -> NonNull x xs, s') )
-  in  sequenceParsers parseFirst (many pe)
+  let parseFirst =
+        Parser
+          ( \s ->
+              case parseElement s of
+                Nothing -> Nothing
+                Just (x, s') -> Just (NonNull x, s')
+          )
+   in -- A more verbose version of the above:
+      -- Just (x, s') -> Just (\xs -> NonNull x xs, s') )
+      sequenceParsers parseFirst (many pe)
 
 -- | Parses zero or more of something.
 --
@@ -168,6 +177,33 @@ data Number
 -- 4) Write a parser for Number by combining the above. Note that the longest
 --    matching prefix should be used, so "3.14" should be parsed as a decimal
 --    with fractional digits, instead of a non-negative integer.
+
+-- | Parses e.g. "3.14" into ([3], [1,4])
+floatParts :: Parser (NonNull Int, [Int])
+floatParts =
+  -- let
+  --     pureTuple :: Parser (a -> b -> (a, b))
+  --     pureTuple = pure (,)
+
+  --     leftOfDecimal = some digit
+
+  --     step1 ::Parser (b0 -> (NonNull Int, b0))
+  --     step1 = pureTuple <*> leftOfDecimal
+
+  --     decimalAndRightOfIt :: Parser [Int]
+  --     decimalAndRightOfIt = (char '.') *> many digit
+  -- in
+
+    -- fmap :: (a -> b) -> f a -> f b
+    -- (,) <$> (some digit <* char '.') <*> many digit
+    -- (,) `fmap` (some digit <* char '.') <*> many digit
+    pure (,) <*> (some digit <* char '.') <*> many digit
+    -- pure (,) <*> some digit <*> (char '.' *> many digit)
+
+    -- ((pure (,) <*> some digit) <*> many digit) *> many digit
+
+-- floating :: Parser Float
+-- floating = undefined <$> floatParts
 
 number :: Parser Number
 number = undefined
