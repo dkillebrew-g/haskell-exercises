@@ -22,7 +22,7 @@ import Prelude
 -- * The value that was parsed, and the rest of the string (which may be used by
 --   subsequent parsers)
 -- Hint: a parser can produce a value of any type...
-data Parser a = Parser (String -> Maybe (a, String))
+newtype Parser a = Parser (String -> Maybe (a, String))
 
 -- TODO
 -- Note that depending on your definition above, some of the mentions of Parser,
@@ -33,11 +33,14 @@ data Parser a = Parser (String -> Maybe (a, String))
 -- The type of `undefined` depends on how you chose to define `Parser`, so you
 -- must fill it in.
 runParser :: Parser a -> String -> Maybe (a, String)
-runParser = undefined
+runParser (Parser fun) input = fun input
 
 -- | Creates a parser for a single character
 char :: Char -> Parser Char
-char = undefined
+char c = Parser $ \s ->
+  case s of
+    (x : xs) -> if c == x then Just (x, xs) else Nothing
+    [] -> Nothing
 
 -- range:: Char -> Char -> Parser Char
 -- range = undefined
@@ -59,7 +62,14 @@ char = undefined
 -- with each other; the original string should be passed to each subparser in
 -- turn.
 oneOf :: [Parser a] -> Parser a
-oneOf = undefined
+oneOf parsers = Parser $ \s ->
+  let go (p : ps) =
+        let result = runParser p s
+         in case result of
+              Nothing -> go ps
+              Just _ -> result
+      go [] = Nothing
+   in go parsers
 
 -- > theLetterC = assumeSuccess (runParser (oneOf [char 'a', char 'b', char 'c']) "c")
 -- > theLetterC == 'c'
@@ -68,12 +78,14 @@ oneOf = undefined
 -- | Given a function and a parser, returns a parser that: Runs the parser, and
 -- if it was successful, apply the function to the parsed value.
 modifyResult :: (a -> b) -> Parser a -> Parser b
-modifyResult = undefined
+modifyResult func parser = Parser $ \s -> do
+  (val, result) <- runParser parser s
+  pure (func val, result)
 
 -- | Given a value, returns a parser that always succeeds and always returns the
 -- given value.
 makeParserThatAlwaysReturns :: a -> Parser a
-makeParserThatAlwaysReturns = undefined
+makeParserThatAlwaysReturns value = Parser $ \s -> Just (value, s)
 
 -- | Given two values:
 -- * A parser that creates a function of one argument.
@@ -82,7 +94,10 @@ makeParserThatAlwaysReturns = undefined
 -- `sequenceParsers` returns a parser that runs the first, then the second,
 --   then applies the value to the function.
 sequenceParsers :: Parser (a -> b) -> Parser a -> Parser b
-sequenceParsers = undefined
+sequenceParsers firstParser secondParser = Parser $ \s -> do
+  (fun, result1) <- runParser firstParser s
+  (val, result2) <- runParser secondParser result1
+  pure $ (fun val, result2)
 
 -- Implement Functor for your Parser type
 instance Functor Parser where
