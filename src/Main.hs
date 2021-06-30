@@ -228,10 +228,45 @@ number = undefined
 -- three = evaluate (assumeSuccess $ runParser parseMathExpression "1 + 2")
 -- three == 3 -- is True
 
-data MathExpression
+parseBinaryOperator :: Parser BinaryOperator
+parseBinaryOperator =
+  oneOf [char '-' *> pure Sub, char '+' *> pure Add]
 
-mathExpressionParser :: Parser MathExpression
-mathExpressionParser = undefined
+parseInteger :: Parser Integer
+parseInteger =
+  oneOf
+    [ char '0' *> pure 0,
+      char '1' *> pure 1,
+      char '2' *> pure 2,
+      char '3' *> pure 3,
+      char '4' *> pure 4,
+      char '5' *> pure 5,
+      char '6' *> pure 6,
+      char '7' *> pure 7,
+      char '8' *> pure 8
+    ]
+
+-- EBNF:
+-- Literal = [0-9]+
+-- BinaryOperator = '+' | '-'
+-- MathExpression = Literal | MathExpression BinaryOperator MathExpression
+data BinaryOperator = Add | Sub
+  deriving (Show)
+
+data MathExpression
+  = Literal Integer
+  | BinaryExpression MathExpression BinaryOperator MathExpression
+  deriving (Show)
+
+parseMathExpression :: Parser MathExpression
+parseMathExpression =
+  let parseLiteral :: Parser MathExpression
+      parseLiteral = pure Literal <*> parseInteger
+   in oneOf
+        [ -- Avoid infinite loop: parseMathExpression cannot be leftmost.
+          pure BinaryExpression <*> parseLiteral <*> parseBinaryOperator <*> parseMathExpression,
+          parseLiteral
+        ]
 
 evaluate :: MathExpression -> Int
 evaluate = undefined
