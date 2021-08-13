@@ -11,6 +11,7 @@ module Main (main) where
 -- Some useful links:
 -- https://www.stackage.org/lts-14.27/hoogle
 
+import Control.Monad (join)
 import Data.Char
 import Prelude
 
@@ -176,6 +177,19 @@ many (Parser parseElement) =
           Nothing -> Just ([], s)
           Just (x, s') -> (\(xs, s'') -> (x : xs, s'')) <$> parseList s'
    in Parser parseList
+
+-- | Transforms the output of the parser while verifying it (i.e. The function,
+-- f, may reject the input by returning Nothing). Returns a parser for the
+-- transformed result.
+transformAndVerify :: forall a b. Parser a -> (a -> Maybe b) -> Parser b
+transformAndVerify (Parser p) f =
+  let -- returnedParser :: String -> Maybe (b, String)
+      -- returnedParser s = case p s of
+      --   Nothing -> Nothing
+      --   Just (someA, s') -> (\left -> (left, s')) <$> f someA
+      helper (someA, s') = (\left -> (left, s')) <$> f someA
+      returnedParser s = join (helper <$> p s)
+   in Parser returnedParser
 
 -- Now let's create a parser for numbers. Let's parse two types of numbers:
 -- non-negative integers (e.g. parse 0 and parse 3, but don't parse -3), and
