@@ -348,13 +348,7 @@ parseMathExpression = transformAndVerify parseNumbersAndOperators listToExpressi
 evaluate :: MathExpression -> Int
 evaluate = undefined
 
--- Data.Map
-
--- TemplateHaskell
-data Environment = Environment Map
-  -- deriving (ToJson, FromJson)
-
--- Generics
+-- more exercises: allow for variables, evaluate the expression within an environment that maps variable to integer value
 
 -- three = evaluate (Environment {'x' : 2}) (assumeSuccess $ runParser parseMathExpression "1 + x")
 -- three = evaluate (Environment (fromList [('x', 2)])) (assumeSuccess $ runParser parseMathExpression "1 + x")
