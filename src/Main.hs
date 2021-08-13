@@ -272,15 +272,78 @@ data MathExpression
   | BinaryExpression MathExpression BinaryOperator MathExpression
   deriving (Show)
 
+-- This is wrong because it creates right associative expressions.
+-- parseMathExpression :: Parser MathExpression
+-- parseMathExpression =
+--   let parseLiteral :: Parser MathExpression
+--       parseLiteral = pure Literal <*> parseInteger
+--    in oneOf
+--         [ -- Avoid infinite loop: parseMathExpression cannot be leftmost.
+--           pure BinaryExpression <*> parseLiteral <*> parseBinaryOperator <*> parseMathExpression,
+--           parseLiteral
+--         ]
+
+
+-- Solution to the problem above:
+-- Split our parsing into two steps:
+-- 1. parse a list of numbers and operators, with no error checking of syntactic
+--    correctness (e.g. two operators in a row will be accepted)
+-- 2. transform the list to an expression tree that has proper associativity,
+--    failing when the input has bad syntax
+
+type NumberOrOperator = Either Integer BinaryOperator
+
+parseNumberOrOperator :: Parser NumberOrOperator
+parseNumberOrOperator = oneOf [Left <$> parseInteger, Right <$> parseBinaryOperator]
+
+-- first let's just parse a list of numbers and operators, then do further parsing of that
+parseNumbersAndOperators :: Parser [NumberOrOperator]
+parseNumbersAndOperators = many parseNumberOrOperator
+
+-- Converts a list of numbers and operators into an expression (a tree) with
+-- proper left associativity, so that an in-order traversal is correct
+-- mathematical evaluation.
+--
+-- from a list:
+-- [1, +, 2, -, 3]
+-- we want to make this parse tree:
+--    -
+--  +  3
+-- 1 2
+listToExpressionTree :: [NumberOrOperator] -> Maybe MathExpression
+listToExpressionTree [] = Nothing -- Can't produce an expression from no input.
+listToExpressionTree (Left i : xs) = withSubExpression (Literal i) xs
+listToExpressionTree (Right _ : _) = Nothing
+
+-- Returns a MathExpression, assuming that prefixExpr is an expression formed by
+-- the numbers and operators that have come before the [NumberOrOperator].
+--
+-- Essentially this handles one interesting case:
+-- expr, [binop, int, ...]
+-- and creates the expression:
+--     binop
+-- expr     int
+-- Then recurses using expression and ...
+--
+-- Paths into withSubExpression:
+-- prefixExpr is Literal
+-- prefixExpr is Literal BinOp Literal
+-- prefixExpr is (Literal BinOp Literal) BinOp Literal
+-- etc.
+withSubExpression :: MathExpression -> [NumberOrOperator] -> Maybe MathExpression
+withSubExpression prefixExpr [] = Just prefixExpr
+withSubExpression prefixExpr (Right op : Left i : xs) =
+  let subExpr = BinaryExpression prefixExpr op (Literal i)
+   in withSubExpression subExpr xs
+-- This catches malformed examples such as: 1 + 2 3
+withSubExpression _ (Left _ : _) = Nothing
+-- This catches malformed examples such as: +
+withSubExpression _ [Right _] = Nothing
+-- This catches malformed examples such as: + +
+withSubExpression _ (Right _ : Right _ : _) = Nothing
+
 parseMathExpression :: Parser MathExpression
-parseMathExpression =
-  let parseLiteral :: Parser MathExpression
-      parseLiteral = pure Literal <*> parseInteger
-   in oneOf
-        [ -- Avoid infinite loop: parseMathExpression cannot be leftmost.
-          pure BinaryExpression <*> parseLiteral <*> parseBinaryOperator <*> parseMathExpression,
-          parseLiteral
-        ]
+parseMathExpression = transformAndVerify parseNumbersAndOperators listToExpressionTree
 
 evaluate :: MathExpression -> Int
 evaluate = undefined
@@ -298,4 +361,11 @@ data Environment = Environment Map
 
 main :: IO ()
 main = do
-  undefined
+  print (runParser parseMathExpression "1")
+  print (runParser parseMathExpression "1+2")
+  print (runParser parseMathExpression "1+2-3")
+  print (runParser parseMathExpression "1+2-3+4")
+
+  print (runParser parseMathExpression "1+2 3")
+  print (runParser parseMathExpression "+")
+  print (runParser parseMathExpression "++")
