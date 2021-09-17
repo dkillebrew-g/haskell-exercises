@@ -4,9 +4,11 @@ synopsis:            Write You a Scheme
 
 default-extensions:
 - OverloadedStrings
+- NoImplicitPrelude
 
 dependencies:
 - base  >= 4.8 && <5.0
+- classy-prelude
 - bytestring
 - containers
 - directory
