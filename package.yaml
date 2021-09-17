@@ -13,7 +13,7 @@ dependencies:
 - haskeline
 - mtl
 - optparse-applicative
-- parsec
+- megaparsec
 - text
 - transformers
 - HTTP
