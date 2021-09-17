@@ -22,23 +22,11 @@ dependencies:
 - hspec
 
 ghc-options:
-- -Werror
+- -Weverything
 - -fno-warn-unused-do-bind
 - -fno-warn-unused-binds
 - -fno-warn-type-defaults
 - -fno-warn-name-shadowing
-- -fwarn-duplicate-exports
-- -fwarn-dodgy-exports
-- -fwarn-dodgy-imports
-- -fwarn-incomplete-patterns
-- -fwarn-incomplete-record-updates
-- -fwarn-missing-fields
-- -fwarn-missing-methods
-- -fwarn-orphans
-- -fwarn-overlapping-patterns
-- -fwarn-unused-imports
-- -fwarn-tabs
-- -fwarn-unrecognised-pragmas
 
 library:
   source-dirs: src/
