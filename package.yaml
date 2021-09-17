@@ -23,10 +23,6 @@ dependencies:
 
 ghc-options:
 - -Weverything
-- -fno-warn-unused-do-bind
-- -fno-warn-unused-binds
-- -fno-warn-type-defaults
-- -fno-warn-name-shadowing
 
 library:
   source-dirs: src/
