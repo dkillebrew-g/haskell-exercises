@@ -26,7 +26,6 @@ ghc-options:
 - -fno-warn-unused-do-bind
 - -fno-warn-unused-binds
 - -fno-warn-type-defaults
-- -fno-warn-type-defaults
 - -fno-warn-name-shadowing
 - -fwarn-duplicate-exports
 - -fwarn-dodgy-exports
