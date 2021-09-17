@@ -14,6 +14,7 @@ module Main (main) where
 import Control.Monad (join)
 import Data.Char
 import Prelude
+import Debug.Trace (trace, traceShow, traceId)
 
 -- Fill in all TODOs and `undefined`s.
 
@@ -96,9 +97,9 @@ makeParserThatAlwaysReturns value = Parser $ \s -> Just (value, s)
 --   then applies the value to the function.
 sequenceParsers :: Parser (a -> b) -> Parser a -> Parser b
 sequenceParsers firstParser secondParser = Parser $ \s -> do
-  (fun, result1) <- runParser firstParser s
-  (val, result2) <- runParser secondParser result1
-  pure $ (fun val, result2)
+  (fun, s') <- runParser firstParser s
+  (val, s'') <- runParser secondParser s'
+  pure (fun val, s'')
 
 -- Implement Functor for your Parser type
 instance Functor Parser where
@@ -269,6 +270,7 @@ data BinaryOperator = Add | Sub
 
 data MathExpression
   = Literal Integer
+  -- | Variable String
   | BinaryExpression MathExpression BinaryOperator MathExpression
   deriving (Show)
 
@@ -345,7 +347,7 @@ withSubExpression _ (Right _ : Right _ : _) = Nothing
 parseMathExpression :: Parser MathExpression
 parseMathExpression = transformAndVerify parseNumbersAndOperators listToExpressionTree
 
-evaluate :: MathExpression -> Int
+evaluate :: (String -> Number) ->  MathExpression -> Int
 evaluate = undefined
 
 -- more exercises: allow for variables, evaluate the expression within an environment that maps variable to integer value
@@ -358,7 +360,9 @@ main = do
   print (runParser parseMathExpression "1")
   print (runParser parseMathExpression "1+2")
   print (runParser parseMathExpression "1+2-3")
-  print (runParser parseMathExpression "1+2-3+4")
+  print (runParser parseMathExpression "x+1+2-3+4")
+  let supplyEnvironment "x" = 3
+  print $ evaluate supplyEnvironment (fromJust . fst $ (runParser parseMathExpression "x+1+2-3+4"))
 
   print (runParser parseMathExpression "1+2 3")
   print (runParser parseMathExpression "+")
