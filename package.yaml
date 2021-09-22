@@ -36,12 +36,12 @@ executables:
     dependencies:
     - base >= 4.8 && < 5
     - scheme
-  docs:
-    main: Build.hs
-    dependencies:
-    - base >= 4.8 && < 5.0
-    - shake
-    - pandoc
+  # docs:
+  #   main: Build.hs
+  #   dependencies:
+  #   - base >= 4.8 && < 5.0
+  #   - shake
+  #   - pandoc
 
 tests:
   test:
