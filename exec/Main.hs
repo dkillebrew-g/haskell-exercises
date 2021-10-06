@@ -26,7 +26,7 @@ mul2 = (* 2)
 -- div2
 -- mul2
 -- print it back out
--- return the int
+-- return the result of mul2
 
 main :: IO ()
 main = do
