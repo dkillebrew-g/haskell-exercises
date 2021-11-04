@@ -39,14 +39,6 @@ parseAndDiv = do
 main :: IO ()
 main = do
   line <- getLine
-  let asInt :: Maybe Int
-      asInt = readMay line
-      divided_fmap = join (fmap div2 asInt) -- just for demonstration
-      divided = asInt >>= div2
-      multiplied = fmap mul2 divided
-  case multiplied of
-      Nothing -> pure ()
-      Just x -> print x
 
   let
     --   bar :: Int
