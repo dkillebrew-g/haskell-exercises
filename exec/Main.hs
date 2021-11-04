@@ -48,6 +48,16 @@ main = do
       Nothing -> pure ()
       Just x -> print x
 
+  let
+    --   bar :: Int
+    --   bar = runReader parseAndDiv line
+    --   bar :: Maybe Int
+    --   bar = runReader parseAndDiv line
+
+      bar :: Maybe Int
+      bar = runReader parseAndDiv line
+
+
   -- We'll call parseAndDiv, passing it the line we got via getLine
   -- if it succeeds and returns an int, then print the int.
 
