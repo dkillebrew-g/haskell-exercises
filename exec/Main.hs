@@ -7,16 +7,9 @@ import ClassyPrelude
 
 import Control.Monad.Except
 import Control.Monad.Reader
-import Control.Monad.Writer
-
-
--- MTL (Monad transformer library)?
 
 -- Some useful links:
 -- https://www.stackage.org/lts-18.10/hoogle
-
--- Do a stackage search for MaybeT
--- skim/read the docs
 
 -- this is in the branch 'exercise/monad_transformer':
 
