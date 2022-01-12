@@ -43,26 +43,26 @@ executables:
   #   - shake
   #   - pandoc
 
-tests:
-  test:
-    main: Main.hs
-    source-dirs: test-hs/Spec/
-    dependencies:
-    - scheme
-    - hspec
-    ghc-options:
-    - -threaded
-    - -rtsopts
-    - -with-rtsopts=-N
-  test-golden:
-    main: Main.hs
-    source-dirs: test-hs/Golden
-    dependencies:
-    - scheme
-    - tasty
-    - tasty-golden
-    - bytestring
-    ghc-options:
-    - -threaded
-    - -rtsopts
-    - -with-rtsopts=-N
+# tests:
+#   test:
+#     main: Main.hs
+#     source-dirs: test-hs/Spec/
+#     dependencies:
+#     - scheme
+#     - hspec
+#     ghc-options:
+#     - -threaded
+#     - -rtsopts
+#     - -with-rtsopts=-N
+#   test-golden:
+#     main: Main.hs
+#     source-dirs: test-hs/Golden
+#     dependencies:
+#     - scheme
+#     - tasty
+#     - tasty-golden
+#     - bytestring
+#     ghc-options:
+#     - -threaded
+#     - -rtsopts
+#     - -with-rtsopts=-N
