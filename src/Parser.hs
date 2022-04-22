@@ -26,15 +26,28 @@ lexeme = L.lexeme sc
 symbol :: Text -> Parser Text
 symbol = L.symbol sc
 
+-- Follows https://www.scheme.com/tspl2d/grammar.html section Identifiers.
 identifier :: Parser Text
 identifier =
-  let start :: Parser Char
-      start = letterChar <|> oneOf ['-', '+', '/', '*', '=', '|', '&', '>', '<']
-      tailChar :: Parser Char
-      tailChar = digitChar <|> start
+  let initial :: Parser Char
+      initial =
+        letterChar
+          <|> oneOf validChars
+            -- ['!', '$', '%', '&', '*', '/', ':', '<', '=', '>', '?', '~', '_', '^']
+            -- oneOf "!$"
+      validChars :: [Char]
+      validChars = "$!"
+      -- :: Text
+      -- :: ByteString
+      subsequent :: Parser Char
+      subsequent = initial <|> digitChar <|> oneOf ['.', '+', '-']
       unpacked :: Parser [Char]
-      unpacked = (:) <$> start <*> many tailChar
-   in pack <$> unpacked
+      unpacked = (:) <$> initial <*> many subsequent
+      someIdentifier :: Parser Text
+      someIdentifier = pack <$> unpacked
+      exceptionalIdentifier :: Parser Text
+      exceptionalIdentifier = string "+" <|> string "-" <|> string "..."
+   in someIdentifier <|> exceptionalIdentifier
 
 parseAtom :: Parser LispVal
 parseAtom = lexeme (Atom <$> identifier)
